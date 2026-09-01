@@ -45,16 +45,6 @@ module tt_um_vga_example(
     .hpos(pix_x),
     .vpos(pix_y)
   );
-  
-  wire clk1000;
-
-  clock_divider #(
-    .DIVIDE(10000000)
-  ) clk1000_div (
-    .clk(clk),
-    .reset(~rst_n),
-    .tick(clk1000)
-  );
 
   wire [9:0] new_enemy_x;
   wire [8:0] new_enemy_y;
