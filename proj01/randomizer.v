@@ -8,7 +8,7 @@ module randomizer
   input wire reset,
   input wire enable,
 
-  output wire [$clog2(RANGE)-1:0] rnd
+  output wire [9:0] rnd
 );
   reg [15:0] lfsr;
   wire [31:0] scaled = lfsr * RANGE;
@@ -21,5 +21,5 @@ module randomizer
     end
   end
 
-  assign rnd = scaled[31:16];
+  assign rnd = scaled[25:16];
 endmodule
