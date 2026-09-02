@@ -149,7 +149,7 @@ module tt_um_vga_example(
     end
   endgenerate
 
-  always_comb begin
+  always @(*) begin
     R = 2'b00;
     G = 2'b00;
     B = 2'b00;
