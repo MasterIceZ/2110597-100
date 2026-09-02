@@ -49,16 +49,19 @@ module tt_um_vga_example(
   wire [9:0] new_enemy_x;
   wire [8:0] new_enemy_y;
 
+  wire [9:0] _rx;
   randomizer #(
-    .RANGE(640),
+    .RANGE(600),
     .SEED(16'h1234),
     .TAPS(16'hB400)
   ) rx (
     .clk(clk),
     .reset(~rst_n),
     .enable(vsync),
-    .rnd(new_enemy_x)
+    .rnd(_rx)
   );
+
+  assign new_enemy_x = _rx + 5;
 
   randomizer #(
     .RANGE(200),
@@ -71,18 +74,19 @@ module tt_um_vga_example(
     .rnd(new_enemy_y)
   );
 
-  reg [9:0] enemy_x [0:1];
-  reg [9:0] enemy_y [0:1];
-  reg [1:0] enemy_alive;
+  reg [9:0] enemy_x [0:2];
+  reg [9:0] enemy_y [0:2];
+  reg [2:0] enemy_alive;
 
-  wire free_enemy_slot = ~enemy_alive[0] ? 0 : 1;
+  wire [1:0] free_enemy_slot = ~enemy_alive[0] ? 0 :
+                        ~enemy_alive[1] ? 1 : 2;
   wire has_free_enemy_slot = ~(&enemy_alive);
 
-  wire [1:0] is_enemy;
+  wire [2:0] is_enemy;
   
   genvar i;
   generate
-    for(i=0; i<2; i=i+1) begin
+    for(i=0; i<3; i=i+1) begin
       enemy #(
         .ENEMY_SIZE(20)
       ) e (
@@ -127,9 +131,9 @@ module tt_um_vga_example(
     .is_bullet(is_bullet)
   );
 
-  wire [1:0] collide;
+  wire [2:0] collide;
   generate
-    for(i=0; i<2; i=i+1) begin
+    for(i=0; i<3; i=i+1) begin
       enemy #(
         .ENEMY_SIZE(20)
       ) e (
@@ -169,7 +173,7 @@ module tt_um_vga_example(
   always @(posedge vsync, negedge rst_n) begin
     if (~rst_n) begin
       player_x <= 400;
-      player_y <= 400;
+      player_y <= 450;
     end else begin 
       if (has_free_enemy_slot) begin
         enemy_x[free_enemy_slot] <= new_enemy_x;
@@ -202,6 +206,8 @@ module tt_um_vga_example(
           enemy_alive[0] <= 0;
         end else if (collide[1]) begin
           enemy_alive[1] <= 0;
+        end else if (collide[2]) begin
+          enemy_alive[2] <= 0;
         end
       end
 
