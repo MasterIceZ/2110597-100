@@ -68,9 +68,35 @@ module tt_um_vga_example (
     $readmemh("../data/bg1.mem", img2);
   end
 
+  reg [20:0] add;
+
   always @(posedge clk)begin
-       color <= img[mem_index]+img2[mem_index];
+      color <= img[mem_index]+img2[mem_index];
+      color <= img[mem_index + add];
   end
+
+  reg state;
+
+  always @(posedge vsync) begin
+    if (~rst_n) begin
+      state <= 0;
+    end else begin
+      if (state == 0) begin
+        if (add != DISPLAY_WIDTH - 1) begin
+          add <= add + 1;
+        end else begin
+          state <= 1;
+        end
+      end else begin
+        if (add != 0) begin
+          add <= add - 1;
+        end else begin
+          state <= 0;
+        end
+      end
+    end
+  end
+
   assign mem_index = (pix_y / MUL_FACTOR) * IMG_SIZE + pix_x / MUL_FACTOR;  
   //assign color = img[mem_index]+img2[mem_index];
   assign R = (video_active)? color[5:4]:0;
