@@ -1,0 +1,16 @@
+project:
+  title: "Project 1 - VGA Shooting Game"
+  author: "MasterIceZ"
+  description: "Move the red player and shoot the yellow enemies"
+  language: "Verilog"
+  clock_hz: 25175000
+  top_module: "tt_um_vga_example"
+  source_files:
+    - "../project.v"
+    - "../hvsync_generator.v"
+    - "../player.v"
+    - "../enemy.v"
+    - "../bullet.v"
+    - "../randomizer.v"
+    - "../clock_divider.v"
+yaml_version: 6
