@@ -4,7 +4,7 @@
  * Author: Uri Shaked
 
 
- - Modified by Pongsgon Vichitvejpaisal to 
+ - Modified by Pongsgon Vichitvejpaisal to
   load 320x240 6-bit color image
  */
 
@@ -58,6 +58,18 @@ module tt_um_vga_example (
       .vpos(pix_y)
   );
 
+  wire inp_a;
+
+  gamepad_pmod_single gamepad_controller (
+    .rst_n(rst_n),
+    .clk(clk),
+    .pmod_data(ui_in[6]),
+    .pmod_clk(ui_in[5]),
+    .pmod_latch(ui_in[4]),
+
+    .a(inp_a)
+  );
+
   reg [5:0] img[76799:0];  // 320x240
   reg [5:0] img2[76799:0];  // 320x240
   wire [16:0] mem_index;
@@ -81,43 +93,36 @@ module tt_um_vga_example (
   end
 
   reg state;
+  reg prev_a;
 
   always @(posedge vsync) begin
     if (~rst_n) begin
       state <= 0;
-      a<=0;
-    end 
-    else if (ui_in[0] && state == 0) begin
-      state <=1;
+      prev_a <= 0;
+      a <= 0;
+      counter <= 0;
     end
-    else if (state == 1) begin
-      if(counter < 60) begin
+    else begin
+      prev_a <= inp_a;
+      if (inp_a && !prev_a) begin
+        state <= ~state;
+        counter <= 0;
+      end
+      else if (counter < 60) begin
         counter <= counter+1;
       end
-      else if(a<4) begin
-        a<=a+1;
-        counter<=0;
+      else if (state == 1 && a < 4) begin
+        a <= a+1;
+        counter <= 0;
       end
-      else begin
-        state<=2;
-        counter<=0;
-      end
-    end
-    else if (state == 2)begin
-      if(counter <60)begin
-        counter <= counter+1;
-      end
-      else if(a>0)begin
+      else if (state == 0 && a > 0) begin
         a <= a-1;
-        counter<=0;
-      end
-      else begin
-        state<=0;
+        counter <= 0;
       end
     end
   end
 
-  assign mem_index = (pix_y / MUL_FACTOR) * IMG_SIZE + pix_x / MUL_FACTOR;  
+  assign mem_index = (pix_y / MUL_FACTOR) * IMG_SIZE + pix_x / MUL_FACTOR;
   //assign color = img[mem_index]+img2[mem_index];
   assign R = (video_active)? color[5:4]:0;
   assign G = (video_active)? color[3:2]:0;
